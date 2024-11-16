@@ -57,12 +57,12 @@ export function EmoticonAutocomplete({
 
   const searchList = useMemo(() => {
     const list: Array<EmoticonSearchItem> = [];
-    return list.concat(
-      imagePacks.flatMap((pack) =>
-        pack.getImagesFor(PackUsage.Emoticon).sort((a, b) => a.shortcode.localeCompare(b.shortcode))
-      ),
-      emojis
-    );
+    return list
+      .concat(
+        imagePacks.flatMap((pack) => pack.getImagesFor(PackUsage.Emoticon)),
+        emojis
+      )
+      .sort((a, b) => a.shortcode.localeCompare(b.shortcode));
   }, [imagePacks]);
 
   const [result, search, resetSearch] = useAsyncSearch(searchList, getEmoticonStr, SEARCH_OPTIONS);

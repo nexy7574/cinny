@@ -58,7 +58,9 @@ export function EmoticonAutocomplete({
   const searchList = useMemo(() => {
     const list: Array<EmoticonSearchItem> = [];
     return list.concat(
-      imagePacks.flatMap((pack) => pack.getImagesFor(PackUsage.Emoticon)),
+      imagePacks.flatMap((pack) =>
+        pack.getImagesFor(PackUsage.Emoticon).sort((a, b) => a.shortcode.localeCompare(b.shortcode))
+      ),
       emojis
     );
   }, [imagePacks]);

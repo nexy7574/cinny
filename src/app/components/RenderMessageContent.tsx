@@ -29,6 +29,7 @@ import { ImageViewer } from './image-viewer';
 import { PdfViewer } from './Pdf-viewer';
 import { TextViewer } from './text-viewer';
 import { testMatrixTo } from '../plugins/matrix-to';
+import {IImageContent} from "../../types/matrix/common";
 
 type RenderMessageContentProps = {
   displayName: string;
@@ -157,19 +158,48 @@ export function RenderMessageContent({
   }
 
   if (msgType === MsgType.Image) {
+    const content: IImageContent = getContent();
+    const renderCaption = content.filename && content.filename !== content.body;
     return (
-      <MImage
-        content={getContent()}
-        renderImageContent={(props) => (
-          <ImageContent
-            {...props}
-            autoPlay={mediaAutoLoad}
-            renderImage={(p) => <Image {...p} loading="lazy" />}
-            renderViewer={(p) => <ImageViewer {...p} />}
-          />
-        )}
-        outlined={outlineAttachment}
-      />
+      <>
+        <MImage
+            content={getContent()}
+            renderBody={(props) => (
+                <RenderBody
+                    {...props}
+                    highlightRegex={highlightRegex}
+                    htmlReactParserOptions={htmlReactParserOptions}
+                    linkifyOpts={linkifyOpts}
+                />
+            )}
+            renderImageContent={(props) => (
+                <ImageContent
+                    {...props}
+                    autoPlay={mediaAutoLoad}
+                    renderImage={(p) => <Image {...p} loading="lazy" />}
+                    renderViewer={(p) => <ImageViewer {...p} />}
+                />
+            )}
+            outlined={outlineAttachment}
+        />
+        {
+          renderCaption && (
+                <MNotice
+                    edited={edited}
+                    content={getContent()}
+                    renderBody={(props) => (
+                        <RenderBody
+                            {...props}
+                            highlightRegex={highlightRegex}
+                            htmlReactParserOptions={htmlReactParserOptions}
+                            linkifyOpts={linkifyOpts}
+                        />
+                    )}
+                    renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+                />
+            )
+        }
+      </>
     );
   }
 

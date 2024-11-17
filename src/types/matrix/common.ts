@@ -43,6 +43,7 @@ export type IThumbnailContent = {
 export type IImageContent = {
   msgtype: MsgType.Image;
   body?: string;
+  filename?: string;
   url?: string;
   info?: IImageInfo & IThumbnailContent;
   file?: IEncryptedFile;

@@ -172,6 +172,7 @@ export function MNotice({ edited, content, renderBody, renderUrlsPreview }: MNot
 
 type RenderImageContentProps = {
   body: string;
+  filename?: string;
   info?: IImageInfo & IThumbnailContent;
   mimeType?: string;
   url: string;
@@ -179,10 +180,11 @@ type RenderImageContentProps = {
 };
 type MImageProps = {
   content: IImageContent;
+  renderBody: (props: RenderBodyProps) => ReactNode;
   renderImageContent: (props: RenderImageContentProps) => ReactNode;
   outlined?: boolean;
 };
-export function MImage({ content, renderImageContent, outlined }: MImageProps) {
+export function MImage({ content, renderBody, renderImageContent, outlined }: MImageProps) {
   const imgInfo = content?.info;
   const mxcUrl = content.file?.url ?? content.url;
   if (typeof mxcUrl !== 'string') {

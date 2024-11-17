@@ -70,6 +70,7 @@ export type IAudioContent = {
 export type IFileContent = {
   msgtype: MsgType.File;
   body?: string;
+  filename?: string;
   url?: string;
   info?: IFileInfo & IThumbnailContent;
   file?: IEncryptedFile;

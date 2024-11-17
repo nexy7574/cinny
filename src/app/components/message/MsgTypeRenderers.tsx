@@ -323,14 +323,14 @@ export function MFile({ content, renderFileContent, outlined }: MFileProps) {
     <Attachment outlined={outlined}>
       <AttachmentHeader>
         <FileHeader
-          body={content.body ?? 'Unnamed File'}
+          body={content.filename ?? content.body ?? 'Unnamed File'}
           mimeType={fileInfo?.mimetype ?? FALLBACK_MIMETYPE}
         />
       </AttachmentHeader>
       <AttachmentBox>
         <AttachmentContent>
           {renderFileContent({
-            body: content.body ?? 'File',
+            body: content.filename ?? content.body ?? 'File',
             info: fileInfo ?? {},
             mimeType: fileInfo?.mimetype ?? FALLBACK_MIMETYPE,
             url: mxcUrl,

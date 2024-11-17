@@ -156,48 +156,48 @@ export function RenderMessageContent({
       />
     );
   }
+  const content: IImageContent = getContent();
+  const renderCaption = content.filename && content.filename !== content.body;
 
   if (msgType === MsgType.Image) {
-    const content: IImageContent = getContent();
-    const renderCaption = content.filename && content.filename !== content.body;
     return (
       <>
         <MImage
-            content={getContent()}
-            renderBody={(props) => (
-                <RenderBody
-                    {...props}
-                    highlightRegex={highlightRegex}
-                    htmlReactParserOptions={htmlReactParserOptions}
-                    linkifyOpts={linkifyOpts}
-                />
-            )}
-            renderImageContent={(props) => (
-                <ImageContent
-                    {...props}
-                    autoPlay={mediaAutoLoad}
-                    renderImage={(p) => <Image {...p} loading="lazy" />}
-                    renderViewer={(p) => <ImageViewer {...p} />}
-                />
-            )}
-            outlined={outlineAttachment}
+          content={getContent()}
+          renderBody={(props) => (
+            <RenderBody
+                {...props}
+                highlightRegex={highlightRegex}
+                htmlReactParserOptions={htmlReactParserOptions}
+                linkifyOpts={linkifyOpts}
+            />
+          )}
+          renderImageContent={(props) => (
+              <ImageContent
+                  {...props}
+                  autoPlay={mediaAutoLoad}
+                  renderImage={(p) => <Image {...p} loading="lazy" />}
+                  renderViewer={(p) => <ImageViewer {...p} />}
+              />
+          )}
+          outlined={outlineAttachment}
         />
         {
           renderCaption && (
-                <MNotice
-                    edited={edited}
-                    content={getContent()}
-                    renderBody={(props) => (
-                        <RenderBody
-                            {...props}
-                            highlightRegex={highlightRegex}
-                            htmlReactParserOptions={htmlReactParserOptions}
-                            linkifyOpts={linkifyOpts}
-                        />
-                    )}
-                    renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+            <MNotice
+              edited={edited}
+              content={getContent()}
+              renderBody={(props) => (
+                <RenderBody
+                  {...props}
+                  highlightRegex={highlightRegex}
+                  htmlReactParserOptions={htmlReactParserOptions}
+                  linkifyOpts={linkifyOpts}
                 />
-            )
+              )}
+              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+            />
+          )
         }
       </>
     );
@@ -205,19 +205,20 @@ export function RenderMessageContent({
 
   if (msgType === MsgType.Video) {
     return (
-      <MVideo
-        content={getContent()}
-        renderAsFile={renderFile}
-        renderVideoContent={({ body, info, mimeType, url, encInfo }) => (
-          <VideoContent
-            body={body}
-            info={info}
-            mimeType={mimeType}
-            url={url}
-            encInfo={encInfo}
-            renderThumbnail={
-              mediaAutoLoad
-                ? () => (
+      <>
+        <MVideo
+          content={getContent()}
+          renderAsFile={renderFile}
+          renderVideoContent={({ body, info, mimeType, url, encInfo }) => (
+            <VideoContent
+              body={body}
+              info={info}
+              mimeType={mimeType}
+              url={url}
+              encInfo={encInfo}
+              renderThumbnail={
+                mediaAutoLoad
+                  ? () => (
                     <ThumbnailContent
                       info={info}
                       renderImage={(src) => (
@@ -225,26 +226,65 @@ export function RenderMessageContent({
                       )}
                     />
                   )
-                : undefined
-            }
-            renderVideo={(p) => <Video {...p} />}
-          />
-        )}
-        outlined={outlineAttachment}
-      />
+                  : undefined
+              }
+              renderVideo={(p) => <Video {...p} />}
+            />
+          )}
+          outlined={outlineAttachment}
+        />
+        {
+          renderCaption && (
+            <MNotice
+              edited={edited}
+              content={getContent()}
+              renderBody={(props) => (
+                <RenderBody
+                  {...props}
+                  highlightRegex={highlightRegex}
+                  htmlReactParserOptions={htmlReactParserOptions}
+                  linkifyOpts={linkifyOpts}
+                />
+              )}
+              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+            />
+          )
+        }
+      </>
+
     );
   }
 
   if (msgType === MsgType.Audio) {
     return (
-      <MAudio
-        content={getContent()}
-        renderAsFile={renderFile}
-        renderAudioContent={(props) => (
-          <AudioContent {...props} renderMediaControl={(p) => <MediaControl {...p} />} />
-        )}
-        outlined={outlineAttachment}
-      />
+      <>
+        <MAudio
+          content={getContent()}
+          renderAsFile={renderFile}
+          renderAudioContent={(props) => (
+            <AudioContent {...props} renderMediaControl={(p) => <MediaControl {...p} />} />
+          )}
+          outlined={outlineAttachment}
+        />
+        {
+          renderCaption && (
+            <MNotice
+              edited={edited}
+              content={getContent()}
+              renderBody={(props) => (
+                <RenderBody
+                  {...props}
+                  highlightRegex={highlightRegex}
+                  htmlReactParserOptions={htmlReactParserOptions}
+                  linkifyOpts={linkifyOpts}
+                />
+              )}
+              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+            />
+          )
+        }
+      </>
+
     );
   }
 

@@ -284,7 +284,7 @@ export function MAudio({ content, renderAsFile, renderAudioContent, outlined }: 
   return (
     <Attachment outlined={outlined}>
       <AttachmentHeader>
-        <FileHeader body={content.body ?? 'Audio'} mimeType={safeMimeType} />
+        <FileHeader body={content.filename ?? content.body ?? 'Audio'} mimeType={safeMimeType} />
       </AttachmentHeader>
       <AttachmentBox>
         <AttachmentContent>

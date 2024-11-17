@@ -52,6 +52,7 @@ export type IImageContent = {
 export type IVideoContent = {
   msgtype: MsgType.Video;
   body?: string;
+  filename?: string;
   url?: string;
   info?: IVideoInfo & IThumbnailContent;
   file?: IEncryptedFile;
@@ -60,6 +61,7 @@ export type IVideoContent = {
 export type IAudioContent = {
   msgtype: MsgType.Audio;
   body?: string;
+  filename?: string;
   url?: string;
   info?: IAudioInfo;
   file?: IEncryptedFile;

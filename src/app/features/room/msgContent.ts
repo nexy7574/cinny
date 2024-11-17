@@ -76,7 +76,8 @@ export const getImageMsgContent = async (
 export const getVideoMsgContent = async (
   mx: MatrixClient,
   item: TUploadItem,
-  mxc: string
+  mxc: string,
+  caption?: string
 ): Promise<IContent> => {
   const { file, originalFile, encInfo } = item;
 
@@ -85,7 +86,8 @@ export const getVideoMsgContent = async (
 
   const content: IContent = {
     msgtype: MsgType.Video,
-    body: file.name,
+    filename: file.name,
+    body: caption || file.name,
   };
   if (videoEl) {
     const [thumbError, thumbContent] = await to(
@@ -120,11 +122,12 @@ export const getVideoMsgContent = async (
   return content;
 };
 
-export const getAudioMsgContent = (item: TUploadItem, mxc: string): IContent => {
+export const getAudioMsgContent = (item: TUploadItem, mxc: string, caption?: string): IContent => {
   const { file, encInfo } = item;
   const content: IContent = {
     msgtype: MsgType.Audio,
-    body: file.name,
+    filename: file.name,
+    body: caption || file.name,
     info: {
       mimetype: file.type,
       size: file.size,

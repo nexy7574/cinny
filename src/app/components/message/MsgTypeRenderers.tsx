@@ -180,11 +180,10 @@ type RenderImageContentProps = {
 };
 type MImageProps = {
   content: IImageContent;
-  renderBody: (props: RenderBodyProps) => ReactNode;
   renderImageContent: (props: RenderImageContentProps) => ReactNode;
   outlined?: boolean;
 };
-export function MImage({ content, renderBody, renderImageContent, outlined }: MImageProps) {
+export function MImage({ content, renderImageContent, outlined }: MImageProps) {
   const imgInfo = content?.info;
   const mxcUrl = content.file?.url ?? content.url;
   if (typeof mxcUrl !== 'string') {

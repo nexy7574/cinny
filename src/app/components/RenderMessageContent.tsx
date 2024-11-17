@@ -164,14 +164,6 @@ export function RenderMessageContent({
       <>
         <MImage
           content={getContent()}
-          renderBody={(props) => (
-            <RenderBody
-                {...props}
-                highlightRegex={highlightRegex}
-                htmlReactParserOptions={htmlReactParserOptions}
-                linkifyOpts={linkifyOpts}
-            />
-          )}
           renderImageContent={(props) => (
               <ImageContent
                   {...props}

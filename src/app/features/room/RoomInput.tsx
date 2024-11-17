@@ -227,9 +227,10 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const contentsPromises = uploads.map(async (upload) => {
         const fileItem = selectedFiles.find((f) => f.file === upload.file);
         if (!fileItem) throw new Error('Broken upload');
+        const caption = toPlainText(editor.children).trim() || null;
 
         if (fileItem.file.type.startsWith('image')) {
-          return getImageMsgContent(mx, fileItem, upload.mxc);
+          return getImageMsgContent(mx, fileItem, upload.mxc, caption);
         }
         if (fileItem.file.type.startsWith('video')) {
           return getVideoMsgContent(mx, fileItem, upload.mxc);
@@ -318,7 +319,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           content['m.relates_to'].is_falling_back = false;
         }
       }
-      mx.sendMessage(roomId, content);
+      if (!uploadBoardHandlers.current) {
+          mx.sendMessage(roomId, content);
+      }
       resetEditor(editor);
       resetEditorHistory(editor);
       setReplyDraft(undefined);

@@ -42,7 +42,8 @@ const generateThumbnailContent = async (
 export const getImageMsgContent = async (
   mx: MatrixClient,
   item: TUploadItem,
-  mxc: string
+  mxc: string,
+  caption?: string
 ): Promise<IContent> => {
   const { file, originalFile, encInfo } = item;
   const [imgError, imgEl] = await to(loadImageElement(getImageFileUrl(originalFile)));
@@ -50,7 +51,8 @@ export const getImageMsgContent = async (
 
   const content: IContent = {
     msgtype: MsgType.Image,
-    body: file.name,
+    filename: file.name,
+    body: caption || file.name,
   };
   if (imgEl) {
     const blurHash = encodeBlurHash(imgEl, 512, scaleYDimension(imgEl.width, 512, imgEl.height));

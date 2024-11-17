@@ -144,11 +144,11 @@ export const getAudioMsgContent = (item: TUploadItem, mxc: string, caption?: str
   return content;
 };
 
-export const getFileMsgContent = (item: TUploadItem, mxc: string): IContent => {
+export const getFileMsgContent = (item: TUploadItem, mxc: string, caption?: string): IContent => {
   const { file, encInfo } = item;
   const content: IContent = {
     msgtype: MsgType.File,
-    body: file.name,
+    body: caption ?? file.name,
     filename: file.name,
     info: {
       mimetype: file.type,

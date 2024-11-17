@@ -227,18 +227,18 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const contentsPromises = uploads.map(async (upload) => {
         const fileItem = selectedFiles.find((f) => f.file === upload.file);
         if (!fileItem) throw new Error('Broken upload');
-        const caption = toPlainText(editor.children).trim() || null;
+        const caption = toPlainText(editor.children).trim() || undefined;
 
         if (fileItem.file.type.startsWith('image')) {
           return getImageMsgContent(mx, fileItem, upload.mxc, caption);
         }
         if (fileItem.file.type.startsWith('video')) {
-          return getVideoMsgContent(mx, fileItem, upload.mxc);
+          return getVideoMsgContent(mx, fileItem, upload.mxc, caption);
         }
         if (fileItem.file.type.startsWith('audio')) {
-          return getAudioMsgContent(fileItem, upload.mxc);
+          return getAudioMsgContent(fileItem, upload.mxc, caption);
         }
-        return getFileMsgContent(fileItem, upload.mxc);
+        return getFileMsgContent(fileItem, upload.mxc, caption);
       });
       handleCancelUpload(uploads);
       const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));

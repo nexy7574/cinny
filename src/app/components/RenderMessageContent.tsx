@@ -68,38 +68,62 @@ export function RenderMessageContent({
       </UrlPreviewHolder>
     );
   };
+  const content: IImageContent = getContent();
+  const renderCaption = content.filename && content.filename !== content.body;
+  let renderedCaption: React.ReactNode = null;
+  if(renderCaption) {
+    renderedCaption = (
+      <MNotice
+        edited={edited}
+        content={getContent()}
+        renderBody={(props) => (
+          <RenderBody
+            {...props}
+            highlightRegex={highlightRegex}
+            htmlReactParserOptions={htmlReactParserOptions}
+            linkifyOpts={linkifyOpts}
+          />
+        )}
+        renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+      />
+    )
+  }
 
   const renderFile = () => (
-    <MFile
-      content={getContent()}
-      renderFileContent={({ body, mimeType, info, encInfo, url }) => (
-        <FileContent
-          body={body}
-          mimeType={mimeType}
-          renderAsPdfFile={() => (
-            <ReadPdfFile
+    <>
+      <MFile
+        content={getContent()}
+        renderFileContent={({ body, mimeType, info, encInfo, url }) => (
+            <FileContent
               body={body}
               mimeType={mimeType}
-              url={url}
-              encInfo={encInfo}
-              renderViewer={(p) => <PdfViewer {...p} />}
-            />
-          )}
-          renderAsTextFile={() => (
-            <ReadTextFile
-              body={body}
-              mimeType={mimeType}
-              url={url}
-              encInfo={encInfo}
-              renderViewer={(p) => <TextViewer {...p} />}
-            />
-          )}
-        >
-          <DownloadFile body={body} mimeType={mimeType} url={url} encInfo={encInfo} info={info} />
-        </FileContent>
-      )}
-      outlined={outlineAttachment}
-    />
+              renderAsPdfFile={() => (
+                <ReadPdfFile
+                  body={body}
+                  mimeType={mimeType}
+                  url={url}
+                  encInfo={encInfo}
+                  renderViewer={(p) => <PdfViewer {...p} />}
+                />
+              )}
+              renderAsTextFile={() => (
+                <ReadTextFile
+                  body={body}
+                  mimeType={mimeType}
+                  url={url}
+                  encInfo={encInfo}
+                  renderViewer={(p) => <TextViewer {...p} />}
+                />
+              )}
+            >
+              <DownloadFile body={body} mimeType={mimeType} url={url} encInfo={encInfo} info={info} />
+            </FileContent>
+
+        )}
+        outlined={outlineAttachment}
+      />
+      {renderedCaption}
+    </>
   );
 
   if (msgType === MsgType.Text) {
@@ -156,8 +180,6 @@ export function RenderMessageContent({
       />
     );
   }
-  const content: IImageContent = getContent();
-  const renderCaption = content.filename && content.filename !== content.body;
 
   if (msgType === MsgType.Image) {
     return (
@@ -174,23 +196,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {
-          renderCaption && (
-            <MNotice
-              edited={edited}
-              content={getContent()}
-              renderBody={(props) => (
-                <RenderBody
-                  {...props}
-                  highlightRegex={highlightRegex}
-                  htmlReactParserOptions={htmlReactParserOptions}
-                  linkifyOpts={linkifyOpts}
-                />
-              )}
-              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
-            />
-          )
-        }
+        {renderedCaption}
       </>
     );
   }
@@ -225,23 +231,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {
-          renderCaption && (
-            <MNotice
-              edited={edited}
-              content={getContent()}
-              renderBody={(props) => (
-                <RenderBody
-                  {...props}
-                  highlightRegex={highlightRegex}
-                  htmlReactParserOptions={htmlReactParserOptions}
-                  linkifyOpts={linkifyOpts}
-                />
-              )}
-              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
-            />
-          )
-        }
+        {renderedCaption}
       </>
 
     );
@@ -258,23 +248,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {
-          renderCaption && (
-            <MNotice
-              edited={edited}
-              content={getContent()}
-              renderBody={(props) => (
-                <RenderBody
-                  {...props}
-                  highlightRegex={highlightRegex}
-                  htmlReactParserOptions={htmlReactParserOptions}
-                  linkifyOpts={linkifyOpts}
-                />
-              )}
-              renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
-            />
-          )
-        }
+        {renderedCaption}
       </>
 
     );

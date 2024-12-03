@@ -4,8 +4,12 @@ import { ClientConfig } from '../hooks/useClientConfig';
 import { trimTrailingSlash } from '../utils/common';
 
 const getClientConfig = async (): Promise<ClientConfig> => {
-  const url = `${trimTrailingSlash(import.meta.env.BASE_URL)}/config.json`;
-  const config = await fetch(url, { method: 'GET' });
+  let url = `${trimTrailingSlash(import.meta.env.BASE_URL)}/config.${window.location.hostname}.json`;
+  let config = await fetch(url, { method: 'GET' });
+  if(config.status===404) {
+    url = `${trimTrailingSlash(import.meta.env.BASE_URL)}/config.json`;
+    config = await fetch(url, { method: 'GET' });
+  }
   return config.json();
 };
 

@@ -69,24 +69,25 @@ export function RenderMessageContent({
     );
   };
   const content: IImageContent = getContent();
-  const renderCaption = content.filename && content.filename !== content.body;
-  let renderedCaption: React.ReactNode = null;
-  if(renderCaption) {
-    renderedCaption = (
-      <MNotice
-        edited={edited}
-        content={getContent()}
-        renderBody={(props) => (
-          <RenderBody
-            {...props}
-            highlightRegex={highlightRegex}
-            htmlReactParserOptions={htmlReactParserOptions}
-            linkifyOpts={linkifyOpts}
-          />
-        )}
-        renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
-      />
-    )
+  const renderCaption = () => {
+    if(content.filename && content.filename !== content.body) {
+      return (
+        <MText
+          edited={edited}
+          content={getContent()}
+          renderBody={(props) => (
+            <RenderBody
+              {...props}
+              highlightRegex={highlightRegex}
+              htmlReactParserOptions={htmlReactParserOptions}
+              linkifyOpts={linkifyOpts}
+            />
+          )}
+          renderUrlsPreview={urlPreview ? renderUrlsPreview : undefined}
+        />
+      )
+    }
+    return null;
   }
 
   const renderFile = () => (
@@ -122,7 +123,7 @@ export function RenderMessageContent({
         )}
         outlined={outlineAttachment}
       />
-      {renderedCaption}
+      {renderCaption()}
     </>
   );
 
@@ -196,7 +197,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {renderedCaption}
+        {renderCaption()}
       </>
     );
   }
@@ -231,7 +232,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {renderedCaption}
+        {renderCaption()}
       </>
 
     );
@@ -248,7 +249,7 @@ export function RenderMessageContent({
           )}
           outlined={outlineAttachment}
         />
-        {renderedCaption}
+        {renderCaption()}
       </>
 
     );

@@ -227,18 +227,25 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const contentsPromises = uploads.map(async (upload) => {
         const fileItem = selectedFiles.find((f) => f.file === upload.file);
         if (!fileItem) throw new Error('Broken upload');
-        const caption = toPlainText(editor.children).trim() || undefined;
+        const plainTextCaption = toPlainText(editor.children).trim() || undefined;
+        const customHtmlCaption = trimCustomHtml(
+          toMatrixCustomHTML(editor.children, {
+            allowTextFormatting: true,
+            allowBlockMarkdown: isMarkdown,
+            allowInlineMarkdown: isMarkdown,
+          })
+        ) || undefined;
 
         if (fileItem.file.type.startsWith('image')) {
-          return getImageMsgContent(mx, fileItem, upload.mxc, caption);
+          return getImageMsgContent(mx, fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
         }
         if (fileItem.file.type.startsWith('video')) {
-          return getVideoMsgContent(mx, fileItem, upload.mxc, caption);
+          return getVideoMsgContent(mx, fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
         }
         if (fileItem.file.type.startsWith('audio')) {
-          return getAudioMsgContent(fileItem, upload.mxc, caption);
+          return getAudioMsgContent(fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
         }
-        return getFileMsgContent(fileItem, upload.mxc, caption);
+        return getFileMsgContent(fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
       });
       handleCancelUpload(uploads);
       const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));

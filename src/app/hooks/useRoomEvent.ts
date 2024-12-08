@@ -1,9 +1,9 @@
 import { MatrixEvent, Room } from 'matrix-js-sdk';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import to from 'await-to-js';
 import { CryptoBackend } from 'matrix-js-sdk/lib/common-crypto/CryptoBackend';
+import { useQuery } from '@tanstack/react-query';
 import { useMatrixClient } from './useMatrixClient';
-import { AsyncStatus, useAsyncCallback } from './useAsyncCallback';
 
 const useFetchEvent = (room: Room, eventId: string) => {
   const mx = useMatrixClient();
@@ -19,7 +19,7 @@ const useFetchEvent = (room: Room, eventId: string) => {
     return mEvent;
   }, [mx, room.roomId, eventId]);
 
-  return useAsyncCallback(fetchEventCallback);
+  return fetchEventCallback;
 };
 
 /**
@@ -29,22 +29,19 @@ const useFetchEvent = (room: Room, eventId: string) => {
  * @returns `MatrixEvent`, `undefined` means loading, `null` means failure
  */
 export const useRoomEvent = (room: Room, eventId: string) => {
-  const event = room.findEventById(eventId);
+  const event = useMemo(() => room.findEventById(eventId), [room, eventId]);
 
-  const [fetchState, fetchEvent] = useFetchEvent(room, eventId);
+  const fetchEvent = useFetchEvent(room, eventId);
 
-  useEffect(() => {
-    if (!event) {
-      fetchEvent();
-    }
-  }, [event, fetchEvent]);
+  const { data, error } = useQuery({
+    enabled: event === undefined,
+    queryKey: [room.roomId, eventId],
+    queryFn: fetchEvent,
+  });
 
   if (event) return event;
+  if (data) return data;
+  if (error) return null;
 
-  if (fetchState.status === AsyncStatus.Idle || fetchState.status === AsyncStatus.Loading)
-    return undefined;
-
-  if (fetchState.status === AsyncStatus.Success) return fetchState.data;
-
-  return null;
+  return undefined;
 };

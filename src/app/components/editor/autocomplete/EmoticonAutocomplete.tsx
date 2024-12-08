@@ -62,11 +62,11 @@ export function EmoticonAutocomplete({
         imagePacks.flatMap((pack) => pack.getImagesFor(PackUsage.Emoticon)),
         emojis
       )
-      .sort((a, b) => a.shortcode.localeCompare(b.shortcode));
   }, [imagePacks]);
 
   const [result, search, resetSearch] = useAsyncSearch(searchList, getEmoticonStr, SEARCH_OPTIONS);
-  const autoCompleteEmoticon = result ? result.items : recentEmoji;
+  const autoCompleteEmoticon = (result ? result.items : recentEmoji)
+      .sort((a, b) => a.shortcode.localeCompare(b.shortcode));
 
   useEffect(() => {
     if (query.text) search(query.text);

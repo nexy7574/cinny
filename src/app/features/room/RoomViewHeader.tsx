@@ -56,7 +56,7 @@ import { getViaServers } from '../../plugins/via-servers';
 import { BackRouteHandler } from '../../components/BackRouteHandler';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useRoomPinnedEvents } from '../../hooks/useRoomPinnedEvents';
-import { RoomPinMenu } from '../../components/room-pin-menu';
+import { RoomPinMenu } from './room-pin-menu';
 
 type RoomMenuProps = {
   room: Room;

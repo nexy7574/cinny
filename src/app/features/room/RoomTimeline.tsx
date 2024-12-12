@@ -993,7 +993,6 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reply={
               replyEventId && (
                 <Reply
-                  mx={mx}
                   room={room}
                   timelineSet={timelineSet}
                   replyEventId={replyEventId}
@@ -1065,7 +1064,6 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reply={
               replyEventId && (
                 <Reply
-                  mx={mx}
                   room={room}
                   timelineSet={timelineSet}
                   replyEventId={replyEventId}

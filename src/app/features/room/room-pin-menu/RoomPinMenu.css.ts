@@ -15,5 +15,4 @@ export const PinMenuHeader = style({
 
 export const PinMenuContent = style({
   paddingLeft: config.space.S200,
-  paddingBottom: config.space.S200,
 });

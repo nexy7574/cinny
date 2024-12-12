@@ -28,8 +28,15 @@ const useFetchEvent = (room: Room, eventId: string) => {
  * @param eventId
  * @returns `MatrixEvent`, `undefined` means loading, `null` means failure
  */
-export const useRoomEvent = (room: Room, eventId: string) => {
-  const event = useMemo(() => room.findEventById(eventId), [room, eventId]);
+export const useRoomEvent = (
+  room: Room,
+  eventId: string,
+  getLocally?: () => MatrixEvent | undefined
+) => {
+  const event = useMemo(() => {
+    if (getLocally) return getLocally();
+    return room.findEventById(eventId);
+  }, [room, eventId, getLocally]);
 
   const fetchEvent = useFetchEvent(room, eventId);
 
@@ -37,6 +44,8 @@ export const useRoomEvent = (room: Room, eventId: string) => {
     enabled: event === undefined,
     queryKey: [room.roomId, eventId],
     queryFn: fetchEvent,
+    staleTime: Infinity,
+    gcTime: 60 * 60 * 1000, // 1hour
   });
 
   if (event) return event;

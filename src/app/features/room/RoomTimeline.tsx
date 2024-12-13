@@ -433,10 +433,12 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
   const [showHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
   const setReplyDraft = useSetAtom(roomIdToReplyDraftAtomFamily(room.roomId));
   const powerLevels = usePowerLevelsContext();
-  const { canDoAction, canSendEvent, getPowerLevel } = usePowerLevelsAPI(powerLevels);
+  const { canDoAction, canSendEvent, canSendStateEvent, getPowerLevel } =
+    usePowerLevelsAPI(powerLevels);
   const myPowerLevel = getPowerLevel(mx.getUserId() ?? '');
   const canRedact = canDoAction('redact', myPowerLevel);
   const canSendReaction = canSendEvent(MessageEvent.Reaction, myPowerLevel);
+  const canPinEvent = canSendStateEvent(StateEvent.RoomPinnedEvents, myPowerLevel);
   const [editId, setEditId] = useState<string>();
   const roomToParents = useAtomValue(roomToParentsAtom);
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
@@ -983,6 +985,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             edit={editId === mEventId}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}
@@ -1054,6 +1057,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             edit={editId === mEventId}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}
@@ -1161,6 +1165,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             highlight={highlighted}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}

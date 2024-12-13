@@ -1,5 +1,5 @@
 /* eslint-disable react/destructuring-assignment */
-import React, { forwardRef, MouseEventHandler, useMemo, useRef } from 'react';
+import React, { forwardRef, MouseEventHandler, useCallback, useMemo, useRef } from 'react';
 import { MatrixEvent, RelationType, Room } from 'matrix-js-sdk';
 import {
   Avatar,
@@ -12,6 +12,7 @@ import {
   Icons,
   Menu,
   Scroll,
+  Spinner,
   Text,
   toRem,
 } from 'folds';
@@ -38,8 +39,13 @@ import {
 import { UserAvatar } from '../../../components/user-avatar';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../../utils/matrix';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { getEditedEvent, getMemberAvatarMxc, getMemberDisplayName } from '../../../utils/room';
-import { GetContentCallback, MessageEvent } from '../../../../types/matrix/room';
+import {
+  getEditedEvent,
+  getMemberAvatarMxc,
+  getMemberDisplayName,
+  getStateEvent,
+} from '../../../utils/room';
+import { GetContentCallback, MessageEvent, StateEvent } from '../../../../types/matrix/room';
 import colorMXID from '../../../../util/colorMXID';
 import { useMentionClickHandler } from '../../../hooks/useMentionClickHandler';
 import { useSpoilerClickHandler } from '../../../hooks/useSpoilerClickHandler';
@@ -60,6 +66,9 @@ import { Image } from '../../../components/media';
 import { ImageViewer } from '../../../components/image-viewer';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { VirtualTile } from '../../../components/virtualizer';
+import { usePowerLevelsAPI, usePowerLevelsContext } from '../../../hooks/usePowerLevels';
+import { RoomPinnedEventsEventContent } from 'matrix-js-sdk/lib/types';
+import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 
 function PinnedMessageLoading() {
   return <Box style={{ height: toRem(48) }} />;
@@ -74,17 +83,29 @@ type PinnedMessageProps = {
   eventId: string;
   renderContent: RenderMatrixEvent<[MatrixEvent, string, GetContentCallback]>;
   onOpen: (roomId: string, eventId: string) => void;
+  canPinEvent: boolean;
 };
-function PinnedMessage({ room, eventId, renderContent, onOpen }: PinnedMessageProps) {
+function PinnedMessage({ room, eventId, renderContent, onOpen, canPinEvent }: PinnedMessageProps) {
   const pinnedEvent = useRoomEvent(room, eventId);
   const useAuthentication = useMediaAuthentication();
   const mx = useMatrixClient();
+
+  const [unpinState, unpin] = useAsyncCallback(
+    useCallback(() => {
+      const pinEvent = getStateEvent(room, StateEvent.RoomPinnedEvents);
+      const content = pinEvent?.getContent<RoomPinnedEventsEventContent>() ?? { pinned: [] };
+      const newContent: RoomPinnedEventsEventContent = {
+        pinned: content.pinned.filter((id) => id !== eventId),
+      };
+
+      return mx.sendStateEvent(room.roomId, StateEvent.RoomPinnedEvents, newContent);
+    }, [room, eventId, mx])
+  );
 
   if (pinnedEvent === undefined) return <PinnedMessageLoading />;
   if (pinnedEvent === null) return <PinnedMessageError />;
 
   const sender = pinnedEvent.getSender()!;
-
   const displayName = getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender;
   const senderAvatarMxc = getMemberAvatarMxc(room, sender);
   const getContent = (() => pinnedEvent.getContent()) as GetContentCallback;
@@ -98,6 +119,11 @@ function PinnedMessage({ room, eventId, renderContent, onOpen }: PinnedMessagePr
     const evtId = evt.currentTarget.getAttribute('data-event-id');
     if (!evtId) return;
     onOpen(room.roomId, evtId);
+  };
+
+  const handleUnpinClick: MouseEventHandler = (evt) => {
+    evt.stopPropagation();
+    unpin();
   };
 
   return (
@@ -134,10 +160,26 @@ function PinnedMessage({ room, eventId, renderContent, onOpen }: PinnedMessagePr
             data-event-id={pinnedEvent.getId()}
             onClick={handleOpenClick}
             variant="Secondary"
-            radii="400"
+            radii="Pill"
           >
             <Text size="T200">Open</Text>
           </Chip>
+          {canPinEvent && (
+            <IconButton
+              data-event-id={pinnedEvent.getId()}
+              variant="Secondary"
+              size="300"
+              radii="Pill"
+              onClick={unpinState.status === AsyncStatus.Loading ? undefined : handleUnpinClick}
+              aria-disabled={unpinState.status === AsyncStatus.Loading}
+            >
+              {unpinState.status === AsyncStatus.Loading ? (
+                <Spinner size="100" />
+              ) : (
+                <Icon src={Icons.Cross} size="100" />
+              )}
+            </IconButton>
+          )}
         </Box>
       </Box>
       {replyEventId && (
@@ -160,6 +202,11 @@ type RoomPinMenuProps = {
 export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
   ({ room, requestClose }, ref) => {
     const mx = useMatrixClient();
+    const userId = mx.getUserId()!;
+    const powerLevels = usePowerLevelsContext();
+    const { canSendStateEvent, getPowerLevel } = usePowerLevelsAPI(powerLevels);
+    const canPinEvent = canSendStateEvent(StateEvent.RoomPinnedEvents, getPowerLevel(userId));
+
     const pinnedEvents = useRoomPinnedEvents(room);
     const sortedPinnedEvent = useMemo(() => Array.from(pinnedEvents).reverse(), [pinnedEvents]);
     const useAuthentication = useMediaAuthentication();
@@ -328,6 +375,11 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
       }
     );
 
+    const handleOpen = (roomId: string, eventId: string) => {
+      navigateRoom(roomId, eventId);
+      requestClose();
+    };
+
     return (
       <Menu ref={ref} className={css.PinMenu}>
         <Box grow="Yes" direction="Column">
@@ -362,7 +414,7 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
                         key={vItem.index}
                       >
                         <SequenceCard
-                          style={{ padding: config.space.S400 }}
+                          style={{ padding: config.space.S400, borderRadius: config.radii.R300 }}
                           variant="SurfaceVariant"
                           direction="Column"
                         >
@@ -370,7 +422,8 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
                             room={room}
                             eventId={eventId}
                             renderContent={renderMatrixEvent}
-                            onOpen={navigateRoom}
+                            onOpen={handleOpen}
+                            canPinEvent={canPinEvent}
                           />
                         </SequenceCard>
                       </VirtualTile>

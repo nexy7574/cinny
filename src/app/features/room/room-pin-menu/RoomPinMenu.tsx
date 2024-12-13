@@ -1,6 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 import React, { forwardRef, MouseEventHandler, useCallback, useMemo, useRef } from 'react';
 import { MatrixEvent, RelationType, Room } from 'matrix-js-sdk';
+import { RoomPinnedEventsEventContent } from 'matrix-js-sdk/lib/types';
 import {
   Avatar,
   Box,
@@ -14,7 +15,6 @@ import {
   Scroll,
   Spinner,
   Text,
-  toRem,
 } from 'folds';
 import { Opts as LinkifyOpts } from 'linkifyjs';
 import { HTMLReactParserOptions } from 'html-react-parser';
@@ -26,6 +26,7 @@ import { useRoomEvent } from '../../../hooks/useRoomEvent';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import {
   AvatarBase,
+  DefaultPlaceholder,
   ImageContent,
   MessageNotDecryptedContent,
   MessageUnsupportedContent,
@@ -67,12 +68,7 @@ import { ImageViewer } from '../../../components/image-viewer';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { VirtualTile } from '../../../components/virtualizer';
 import { usePowerLevelsAPI, usePowerLevelsContext } from '../../../hooks/usePowerLevels';
-import { RoomPinnedEventsEventContent } from 'matrix-js-sdk/lib/types';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
-
-function PinnedMessageLoading() {
-  return <Box style={{ height: toRem(48) }} />;
-}
 
 function PinnedMessageError() {
   return <Text>Failed to load!</Text>;
@@ -102,7 +98,7 @@ function PinnedMessage({ room, eventId, renderContent, onOpen, canPinEvent }: Pi
     }, [room, eventId, mx])
   );
 
-  if (pinnedEvent === undefined) return <PinnedMessageLoading />;
+  if (pinnedEvent === undefined) return <DefaultPlaceholder variant="Secondary" />;
   if (pinnedEvent === null) return <PinnedMessageError />;
 
   const sender = pinnedEvent.getSender()!;

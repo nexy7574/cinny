@@ -6,6 +6,7 @@ import {
   Avatar,
   Box,
   Chip,
+  color,
   config,
   Header,
   Icon,
@@ -70,10 +71,6 @@ import { VirtualTile } from '../../../components/virtualizer';
 import { usePowerLevelsAPI, usePowerLevelsContext } from '../../../hooks/usePowerLevels';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 
-function PinnedMessageError() {
-  return <Text>Failed to load!</Text>;
-}
-
 type PinnedMessageProps = {
   room: Room;
   eventId: string;
@@ -98,18 +95,6 @@ function PinnedMessage({ room, eventId, renderContent, onOpen, canPinEvent }: Pi
     }, [room, eventId, mx])
   );
 
-  if (pinnedEvent === undefined) return <DefaultPlaceholder variant="Secondary" />;
-  if (pinnedEvent === null) return <PinnedMessageError />;
-
-  const sender = pinnedEvent.getSender()!;
-  const displayName = getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender;
-  const senderAvatarMxc = getMemberAvatarMxc(room, sender);
-  const getContent = (() => pinnedEvent.getContent()) as GetContentCallback;
-
-  const relation = pinnedEvent.getContent()['m.relates_to'];
-  const replyEventId = relation?.['m.in_reply_to']?.event_id;
-  const threadRootId = relation?.rel_type === RelationType.Thread ? relation.event_id : undefined;
-
   const handleOpenClick: MouseEventHandler = (evt) => {
     evt.stopPropagation();
     const evtId = evt.currentTarget.getAttribute('data-event-id');
@@ -122,6 +107,45 @@ function PinnedMessage({ room, eventId, renderContent, onOpen, canPinEvent }: Pi
     unpin();
   };
 
+  const renderOptions = () => (
+    <Box shrink="No" gap="200" alignItems="Center">
+      <Chip data-event-id={eventId} onClick={handleOpenClick} variant="Secondary" radii="Pill">
+        <Text size="T200">Open</Text>
+      </Chip>
+      {canPinEvent && (
+        <IconButton
+          data-event-id={eventId}
+          variant="Secondary"
+          size="300"
+          radii="Pill"
+          onClick={unpinState.status === AsyncStatus.Loading ? undefined : handleUnpinClick}
+          aria-disabled={unpinState.status === AsyncStatus.Loading}
+        >
+          {unpinState.status === AsyncStatus.Loading ? (
+            <Spinner size="100" />
+          ) : (
+            <Icon src={Icons.Cross} size="100" />
+          )}
+        </IconButton>
+      )}
+    </Box>
+  );
+
+  if (pinnedEvent === undefined) return <DefaultPlaceholder variant="Secondary" />;
+  if (pinnedEvent === null)
+    return (
+      <Box gap="300" justifyContent="SpaceBetween" alignItems="Center">
+        <Box>
+          <Text style={{ color: color.Critical.Main }}>Failed to load message!</Text>
+        </Box>
+        {renderOptions()}
+      </Box>
+    );
+
+  const sender = pinnedEvent.getSender()!;
+  const displayName = getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender;
+  const senderAvatarMxc = getMemberAvatarMxc(room, sender);
+  const getContent = (() => pinnedEvent.getContent()) as GetContentCallback;
   return (
     <ModernLayout
       before={
@@ -151,38 +175,13 @@ function PinnedMessage({ room, eventId, renderContent, onOpen, canPinEvent }: Pi
           </Username>
           <Time ts={pinnedEvent.getTs()} />
         </Box>
-        <Box shrink="No" gap="200" alignItems="Center">
-          <Chip
-            data-event-id={pinnedEvent.getId()}
-            onClick={handleOpenClick}
-            variant="Secondary"
-            radii="Pill"
-          >
-            <Text size="T200">Open</Text>
-          </Chip>
-          {canPinEvent && (
-            <IconButton
-              data-event-id={pinnedEvent.getId()}
-              variant="Secondary"
-              size="300"
-              radii="Pill"
-              onClick={unpinState.status === AsyncStatus.Loading ? undefined : handleUnpinClick}
-              aria-disabled={unpinState.status === AsyncStatus.Loading}
-            >
-              {unpinState.status === AsyncStatus.Loading ? (
-                <Spinner size="100" />
-              ) : (
-                <Icon src={Icons.Cross} size="100" />
-              )}
-            </IconButton>
-          )}
-        </Box>
+        {renderOptions()}
       </Box>
-      {replyEventId && (
+      {pinnedEvent.replyEventId && (
         <Reply
           room={room}
-          replyEventId={replyEventId}
-          threadRootId={threadRootId}
+          replyEventId={pinnedEvent.replyEventId}
+          threadRootId={pinnedEvent.threadRootId}
           onClick={handleOpenClick}
         />
       )}
@@ -214,7 +213,7 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
     const virtualizer = useVirtualizer({
       count: sortedPinnedEvent.length,
       getScrollElement: () => scrollRef.current,
-      estimateSize: () => 80,
+      estimateSize: () => 75,
       overscan: 4,
     });
 

@@ -308,23 +308,23 @@ export function RoomViewHeader() {
               )}
             </TooltipProvider>
           )}
-          {pinnedEvents.length > 0 && (
-            <TooltipProvider
-              position="Bottom"
-              offset={4}
-              tooltip={
-                <Tooltip>
-                  <Text>Pinned Messages</Text>
-                </Tooltip>
-              }
-            >
-              {(triggerRef) => (
-                <IconButton
-                  style={{ position: 'relative' }}
-                  onClick={handleOpenPinMenu}
-                  ref={triggerRef}
-                  aria-pressed={!!pinMenuAnchor}
-                >
+          <TooltipProvider
+            position="Bottom"
+            offset={4}
+            tooltip={
+              <Tooltip>
+                <Text>Pinned Messages</Text>
+              </Tooltip>
+            }
+          >
+            {(triggerRef) => (
+              <IconButton
+                style={{ position: 'relative' }}
+                onClick={handleOpenPinMenu}
+                ref={triggerRef}
+                aria-pressed={!!pinMenuAnchor}
+              >
+                {pinnedEvents.length > 0 && (
                   <Badge
                     style={{
                       position: 'absolute',
@@ -340,11 +340,11 @@ export function RoomViewHeader() {
                       {pinnedEvents.length}
                     </Text>
                   </Badge>
-                  <Icon size="400" src={Icons.Pin} filled={!!pinMenuAnchor} />
-                </IconButton>
-              )}
-            </TooltipProvider>
-          )}
+                )}
+                <Icon size="400" src={Icons.Pin} filled={!!pinMenuAnchor} />
+              </IconButton>
+            )}
+          </TooltipProvider>
           <PopOut
             anchor={pinMenuAnchor}
             position="Bottom"

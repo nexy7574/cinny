@@ -16,6 +16,7 @@ import {
   Scroll,
   Spinner,
   Text,
+  toRem,
 } from 'folds';
 import { Opts as LinkifyOpts } from 'linkifyjs';
 import { HTMLReactParserOptions } from 'html-react-parser';
@@ -70,6 +71,7 @@ import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { VirtualTile } from '../../../components/virtualizer';
 import { usePowerLevelsAPI, usePowerLevelsContext } from '../../../hooks/usePowerLevels';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
+import { ContainerColor } from '../../../styles/ContainerColor.css';
 
 type PinnedMessageProps = {
   room: Room;
@@ -391,40 +393,71 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
           <Box grow="Yes">
             <Scroll ref={scrollRef} size="300" hideTrack visibility="Hover">
               <Box className={css.PinMenuContent} direction="Column" gap="100">
-                <div
-                  style={{
-                    position: 'relative',
-                    height: virtualizer.getTotalSize(),
-                  }}
-                >
-                  {virtualizer.getVirtualItems().map((vItem) => {
-                    const eventId = sortedPinnedEvent[vItem.index];
-                    if (!eventId) return null;
+                {sortedPinnedEvent.length > 0 ? (
+                  <div
+                    style={{
+                      position: 'relative',
+                      height: virtualizer.getTotalSize(),
+                    }}
+                  >
+                    {virtualizer.getVirtualItems().map((vItem) => {
+                      const eventId = sortedPinnedEvent[vItem.index];
+                      if (!eventId) return null;
 
-                    return (
-                      <VirtualTile
-                        virtualItem={vItem}
-                        style={{ paddingBottom: config.space.S200 }}
-                        ref={virtualizer.measureElement}
-                        key={vItem.index}
-                      >
-                        <SequenceCard
-                          style={{ padding: config.space.S400, borderRadius: config.radii.R300 }}
-                          variant="SurfaceVariant"
-                          direction="Column"
+                      return (
+                        <VirtualTile
+                          virtualItem={vItem}
+                          style={{ paddingBottom: config.space.S200 }}
+                          ref={virtualizer.measureElement}
+                          key={vItem.index}
                         >
-                          <PinnedMessage
-                            room={room}
-                            eventId={eventId}
-                            renderContent={renderMatrixEvent}
-                            onOpen={handleOpen}
-                            canPinEvent={canPinEvent}
-                          />
-                        </SequenceCard>
-                      </VirtualTile>
-                    );
-                  })}
-                </div>
+                          <SequenceCard
+                            style={{ padding: config.space.S400, borderRadius: config.radii.R300 }}
+                            variant="SurfaceVariant"
+                            direction="Column"
+                          >
+                            <PinnedMessage
+                              room={room}
+                              eventId={eventId}
+                              renderContent={renderMatrixEvent}
+                              onOpen={handleOpen}
+                              canPinEvent={canPinEvent}
+                            />
+                          </SequenceCard>
+                        </VirtualTile>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Box
+                    className={ContainerColor({ variant: 'SurfaceVariant' })}
+                    style={{
+                      marginBottom: config.space.S200,
+                      padding: `${config.space.S700} ${config.space.S400} ${toRem(60)}`,
+                      borderRadius: config.radii.R300,
+                    }}
+                    grow="Yes"
+                    direction="Column"
+                    gap="400"
+                    justifyContent="Center"
+                    alignItems="Center"
+                  >
+                    <Icon src={Icons.Pin} size="600" />
+                    <Box
+                      style={{ maxWidth: toRem(300) }}
+                      direction="Column"
+                      gap="200"
+                      alignItems="Center"
+                    >
+                      <Text size="H4" align="Center">
+                        No Pinned Messages
+                      </Text>
+                      <Text size="T400" align="Center">
+                        Users with sufficient power level can pin a messages from its context menu.
+                      </Text>
+                    </Box>
+                  </Box>
+                )}
               </Box>
             </Scroll>
           </Box>

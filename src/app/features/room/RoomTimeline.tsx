@@ -1554,17 +1554,33 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           {(canPaginateBack || !rangeAtStart) &&
             (messageLayout === 1 ? (
               <>
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder ref={observeBackAnchor} />
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase ref={observeBackAnchor}>
+                  <CompactPlaceholder />
+                </MessageBase>
               </>
             ) : (
               <>
-                <DefaultPlaceholder />
-                <DefaultPlaceholder />
-                <DefaultPlaceholder ref={observeBackAnchor} />
+                <MessageBase>
+                  <DefaultPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder />
+                </MessageBase>
+                <MessageBase ref={observeBackAnchor}>
+                  <DefaultPlaceholder />
+                </MessageBase>
               </>
             ))}
 
@@ -1573,17 +1589,33 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           {(!liveTimelineLinked || !rangeAtEnd) &&
             (messageLayout === 1 ? (
               <>
-                <CompactPlaceholder ref={observeFrontAnchor} />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
+                <MessageBase ref={observeFrontAnchor}>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder />
+                </MessageBase>
               </>
             ) : (
               <>
-                <DefaultPlaceholder ref={observeFrontAnchor} />
-                <DefaultPlaceholder />
-                <DefaultPlaceholder />
+                <MessageBase ref={observeFrontAnchor}>
+                  <DefaultPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder />
+                </MessageBase>
               </>
             ))}
           <span ref={atBottomAnchorRef} />

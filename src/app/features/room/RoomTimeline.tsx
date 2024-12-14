@@ -1555,31 +1555,31 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             (messageLayout === 1 ? (
               <>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase ref={observeBackAnchor}>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
               </>
             ) : (
               <>
                 <MessageBase>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase ref={observeBackAnchor}>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
               </>
             ))}
@@ -1590,31 +1590,31 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             (messageLayout === 1 ? (
               <>
                 <MessageBase ref={observeFrontAnchor}>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <CompactPlaceholder />
+                  <CompactPlaceholder key={getItems().length} />
                 </MessageBase>
               </>
             ) : (
               <>
                 <MessageBase ref={observeFrontAnchor}>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
                 <MessageBase>
-                  <DefaultPlaceholder />
+                  <DefaultPlaceholder key={getItems().length} />
                 </MessageBase>
               </>
             ))}

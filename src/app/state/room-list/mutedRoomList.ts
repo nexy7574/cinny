@@ -49,7 +49,7 @@ export const useBindMutedRoomsAtom = (mx: MatrixClient, mutedAtom: typeof mutedR
   const setMuted = useSetAtom(mutedAtom);
 
   useEffect(() => {
-    const overrideRules = mx.getAccountData('m.push_rules')?.getContent<IPushRules>()
+    const overrideRules = mx.getAccountData('pushrules')?.getContent<IPushRules>()
       ?.global?.override;
     if (overrideRules) {
       const mutedRooms = overrideRules.reduce<string[]>((rooms, rule) => {

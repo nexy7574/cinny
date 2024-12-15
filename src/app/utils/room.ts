@@ -168,7 +168,7 @@ export const getNotificationType = (mx: MatrixClient, roomId: string): Notificat
   }
 
   if (!roomPushRule) {
-    const overrideRules = mx.getAccountData('m.push_rules')?.getContent<IPushRules>()
+    const overrideRules = mx.getAccountData('pushrules')?.getContent<IPushRules>()
       ?.global?.override;
     if (!overrideRules) return NotificationType.Default;
 

@@ -6,11 +6,24 @@ import { trimTrailingSlash } from '../utils/common';
 const getClientConfig = async (): Promise<ClientConfig> => {
   let url = `${trimTrailingSlash(import.meta.env.BASE_URL)}/config.${window.location.hostname}.json`;
   let config = await fetch(url, { method: 'GET' });
-  if(config.status===404 || import.meta.env.MODE==="development") {
+
+  let loadedConfig = null;
+  try {
+    if(config.ok && import.meta.env.MODE != "development") {
+      loadedConfig = await config.json();
+    }
+  } catch (e) {}
+
+  if(!loadedConfig) {
     url = `${trimTrailingSlash(import.meta.env.BASE_URL)}/config.json`;
     config = await fetch(url, { method: 'GET' });
+    try {
+      loadedConfig = await config.json();
+    } catch (e) {
+      return {};
+    }
   }
-  return config.json();
+  return loadedConfig;
 };
 
 type ClientConfigLoaderProps = {

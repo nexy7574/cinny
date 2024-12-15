@@ -139,7 +139,7 @@ function GlobalNotification() {
     removeKeyword,
   } = useKeywordNotif();
 
-  const keywordRules = pushRules?.global?.content.filter((r) => r.rule_id !== USERNAME) ?? [];
+  const keywordRules = pushRules?.global?.content?.filter((r) => r.rule_id !== USERNAME) ?? [];
 
   const onSelect = (evt, rule) => {
     openReusableContextMenu(

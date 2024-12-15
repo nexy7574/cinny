@@ -227,25 +227,17 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const contentsPromises = uploads.map(async (upload) => {
         const fileItem = selectedFiles.find((f) => f.file === upload.file);
         if (!fileItem) throw new Error('Broken upload');
-        const plainTextCaption = toPlainText(editor.children).trim() || undefined;
-        const customHtmlCaption = trimCustomHtml(
-          toMatrixCustomHTML(editor.children, {
-            allowTextFormatting: true,
-            allowBlockMarkdown: isMarkdown,
-            allowInlineMarkdown: isMarkdown,
-          })
-        ) || undefined;
 
         if (fileItem.file.type.startsWith('image')) {
-          return getImageMsgContent(mx, fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
+          return getImageMsgContent(mx, fileItem, upload.mxc);
         }
         if (fileItem.file.type.startsWith('video')) {
-          return getVideoMsgContent(mx, fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
+          return getVideoMsgContent(mx, fileItem, upload.mxc);
         }
         if (fileItem.file.type.startsWith('audio')) {
-          return getAudioMsgContent(fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
+          return getAudioMsgContent(fileItem, upload.mxc);
         }
-        return getFileMsgContent(fileItem, upload.mxc, plainTextCaption, customHtmlCaption);
+        return getFileMsgContent(fileItem, upload.mxc);
       });
       handleCancelUpload(uploads);
       const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));
@@ -326,9 +318,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           content['m.relates_to'].is_falling_back = false;
         }
       }
-      if (!uploadBoardHandlers.current) {
-          mx.sendMessage(roomId, content);
-      }
+      mx.sendMessage(roomId, content);
       resetEditor(editor);
       resetEditorHistory(editor);
       setReplyDraft(undefined);

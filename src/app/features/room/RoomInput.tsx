@@ -10,9 +10,9 @@ import React, {
 } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
-import { EventType, IContent, MsgType, RelationType, Room } from 'matrix-js-sdk';
+import { EventType, IContent, MsgType, RelationType, Room, IMentions } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
-import { Transforms, Editor } from 'slate';
+import {Transforms, Editor, Descendant} from 'slate';
 import {
   Box,
   Dialog,
@@ -109,6 +109,7 @@ import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
 import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
+import {CustomElement, InlineElement, MentionElement, ParagraphElement} from '../../components/editor/slate';
 
 interface RoomInputProps {
   editor: Editor;
@@ -256,7 +257,6 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       uploadBoardHandlers.current?.handleSend();
 
       const commandName = getBeginCommand(editor);
-
       let plainText = toPlainText(editor.children).trim();
       let customHtml = trimCustomHtml(
         toMatrixCustomHTML(editor.children, {
@@ -297,25 +297,38 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
       if (plainText === '') return;
 
-      let body = plainText;
-      let formattedBody = customHtml;
-      if (replyDraft) {
-        body = parseReplyBody(replyDraft.userId, trimReplyFromBody(replyDraft.body)) + body;
-        formattedBody =
-          parseReplyFormattedBody(
-            roomId,
-            replyDraft.userId,
-            replyDraft.eventId,
-            replyDraft.formattedBody
-              ? trimReplyFromFormattedBody(replyDraft.formattedBody)
-              : sanitizeText(replyDraft.body)
-          ) + formattedBody;
-      }
+      const body = plainText;
+      const formattedBody = customHtml;
 
       const content: IContent = {
         msgtype: msgType,
         body,
       };
+      const userIdMentions = new Set<string>();
+      let mentionsRoom = false;
+      editor.children.forEach((node: any): void => {
+        if (node.type === "paragraph") {
+          node.children.forEach((child: any): void => {
+            if (child.type !== undefined && child.type === "mention") {
+              if(child.name === "@room" && !child.id.startswith("@")) {
+                // Room mention, not MXID
+                mentionsRoom = true
+              } else {
+                userIdMentions.add(child.id)
+              }
+            }
+          })
+        }
+      })
+      const mMentions: IMentions = {}
+      if (userIdMentions.size > 0) {
+        mMentions.user_ids = Array.from(userIdMentions)
+      }
+      if(mentionsRoom) {
+        mMentions.room = true
+      }
+
+      content["m.mentions"] = mMentions
       if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
         content.format = 'org.matrix.custom.html';
         content.formatted_body = formattedBody;

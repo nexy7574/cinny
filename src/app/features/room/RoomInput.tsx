@@ -306,9 +306,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const userIdMentions = new Set<string>();
       let mentionsRoom = false;
       editor.children.forEach((node: CustomElement): void => {
-        node.children.forEach((child: MentionElement): void => {
+        node.children?.forEach((child: MentionElement): void => {
           if (child.type === "mention") {
-            if(child.name === "@room" && !child.id.startsWith("@")) {
+            if(child.name === "@room" && !child.id?.startsWith("@")) {
               mentionsRoom = true
             } else {
               userIdMentions.add(child.id)

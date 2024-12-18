@@ -12,7 +12,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
 import { EventType, IContent, MsgType, RelationType, Room, IMentions } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
-import {Transforms, Editor, Descendant} from 'slate';
+import {Transforms, Editor} from 'slate';
 import {
   Box,
   Dialog,
@@ -96,12 +96,8 @@ import colorMXID from '../../../util/colorMXID';
 import {
   getAllParents,
   getMemberDisplayName,
-  parseReplyBody,
-  parseReplyFormattedBody,
   trimReplyFromBody,
-  trimReplyFromFormattedBody,
 } from '../../utils/room';
-import { sanitizeText } from '../../utils/sanitize';
 import { CommandAutocomplete } from './CommandAutocomplete';
 import { Command, SHRUG, TABLEFLIP, UNFLIP, useCommands } from '../../hooks/useCommands';
 import { mobileOrTablet } from '../../utils/user-agent';
@@ -109,7 +105,10 @@ import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
 import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
-import {CustomElement, InlineElement, MentionElement, ParagraphElement} from '../../components/editor/slate';
+import {
+  CustomElement,
+  MentionElement,
+} from '../../components/editor/slate';
 
 interface RoomInputProps {
   editor: Editor;
@@ -298,19 +297,16 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       };
       const userIdMentions = new Set<string>();
       let mentionsRoom = false;
-      editor.children.forEach((node: any): void => {
-        if (node.type === "paragraph") {
-          node.children.forEach((child: any): void => {
-            if (child.type !== undefined && child.type === "mention") {
-              if(child.name === "@room" && !child.id.startswith("@")) {
-                // Room mention, not MXID
-                mentionsRoom = true
-              } else {
-                userIdMentions.add(child.id)
-              }
+      editor.children.forEach((node: CustomElement): void => {
+        node.children?.forEach((child: MentionElement): void => {
+          if (child.type === "mention") {
+            if(child.name === "@room" && !child.id?.startsWith("@")) {
+              mentionsRoom = true
+            } else {
+              userIdMentions.add(child.id)
             }
-          })
-        }
+          }
+        })
       })
       const mMentions: IMentions = {}
       if (userIdMentions.size > 0) {

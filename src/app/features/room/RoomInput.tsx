@@ -12,7 +12,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
 import { EventType, IContent, MsgType, RelationType, Room, IMentions } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
-import {Transforms, Editor} from 'slate';
+import {Transforms, Editor, Descendant} from 'slate';
 import {
   Box,
   Dialog,
@@ -106,8 +106,8 @@ import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import {
-  CustomElement,
-  MentionElement,
+  CustomElement, InlineElement,
+  MentionElement, ParagraphElement,
 } from '../../components/editor/slate';
 
 interface RoomInputProps {
@@ -296,11 +296,15 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         body,
       };
       const userIdMentions = new Set<string>();
+      if (replyDraft) {
+        userIdMentions.add(replyDraft.userId);
+      }
       let mentionsRoom = false;
-      editor.children.forEach((node: CustomElement): void => {
-        node.children?.forEach((child: MentionElement): void => {
+      editor.children.forEach((node: Descendant): void => {
+        if(node.type !== "paragraph") return;
+        (node as ParagraphElement).children?.forEach((child: InlineElement): void => {
           if (child.type === "mention") {
-            if(child.name === "@room" && !child.id?.startsWith("@")) {
+            if(child.name === "@room" && !child.id.startsWith("@")) {
               mentionsRoom = true
             } else {
               userIdMentions.add(child.id)

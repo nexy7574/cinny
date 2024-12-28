@@ -304,6 +304,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         body,
       };
       const userIdMentions = new Set<string>();
+      if(replyDraft) {
+        userIdMentions.add(replyDraft.userId)
+      }
       let mentionsRoom = false;
       editor.children.forEach((node: CustomElement): void => {
         node.children?.forEach((child: MentionElement): void => {

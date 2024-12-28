@@ -309,13 +309,15 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       }
       let mentionsRoom = false;
       editor.children.forEach((node: Descendant): void => {
-        if(node.type !== "paragraph") return;
-        (node as ParagraphElement).children?.forEach((child: InlineElement): void => {
+        if(node.type === undefined || node.type !== "paragraph") return;
+        const paragraph: ParagraphElement = node as ParagraphElement;
+        paragraph.children?.forEach((child: InlineElement): void => {
           if (child.type === "mention") {
-            if(child.name === "@room" && !child.id.startsWith("@")) {
+            const mention: MentionElement = child as MentionElement;
+            if (mention.name === "@room" && !mention.id.startsWith("@")) {
               mentionsRoom = true
             } else {
-              userIdMentions.add(child.id)
+              userIdMentions.add(mention.id)
             }
           }
         })

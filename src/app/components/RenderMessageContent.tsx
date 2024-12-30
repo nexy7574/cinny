@@ -68,13 +68,13 @@ export function RenderMessageContent({
       </UrlPreviewHolder>
     );
   };
-  const content: IImageContent = getContent();
   const renderCaption = () => {
+    const content: IImageContent = getContent();
     if(content.filename && content.filename !== content.body) {
       return (
         <MText
           edited={edited}
-          content={getContent()}
+          content={content}
           renderBody={(props) => (
             <RenderBody
               {...props}

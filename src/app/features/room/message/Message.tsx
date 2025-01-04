@@ -703,7 +703,8 @@ export const Message = as<'div', MessageProps>(
     const rawEvent = mEvent.getEffectiveEvent();
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
-    let senderId = mEvent.getSender() ?? '';
+    const realSenderId = mEvent.getSender() ?? '';
+    let senderId = realSenderId;
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
@@ -739,7 +740,7 @@ export const Message = as<'div', MessageProps>(
         <Username
           as="button"
           style={{ color: colorMXID(senderId) }}
-          data-user-id={senderId}
+          data-user-id={realSenderId}
           onContextMenu={onUserClick}
           onClick={onUsernameClick}
         >
@@ -769,11 +770,11 @@ export const Message = as<'div', MessageProps>(
           className={css.MessageAvatar}
           as="button"
           size="300"
-          data-user-id={senderId}
+          data-user-id={realSenderId}
           onClick={onUserClick}
         >
           <UserAvatar
-            userId={senderId}
+            userId={realSenderId}
             src={
               senderAvatarMxc
                 ? mxcUrlToHttp(mx, senderAvatarMxc, useAuthentication, 48, 48, 'crop') ?? undefined

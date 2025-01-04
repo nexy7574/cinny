@@ -700,18 +700,33 @@ export const Message = as<'div', MessageProps>(
     },
     ref
   ) => {
+    const rawEvent = mEvent.getEffectiveEvent();
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
-    const senderId = mEvent.getSender() ?? '';
+    let senderId = mEvent.getSender() ?? '';
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     const [emojiBoardAnchor, setEmojiBoardAnchor] = useState<RectCords>();
 
-    const senderDisplayName =
+    let senderDisplayName =
       getMemberDisplayName(room, senderId) ?? getMxIdLocalPart(senderId) ?? senderId;
-    const senderAvatarMxc = getMemberAvatarMxc(room, senderId);
+    let senderAvatarMxc = getMemberAvatarMxc(room, senderId);
+
+    if(rawEvent.content["com.beeper.per_message_profile"]) {
+      const pmp = rawEvent.content["com.beeper.per_message_profile"];
+      if(!pmp.id) {
+        pmp.id = `${room.roomId}-${pmp.displayName || senderDisplayName}`;
+      }
+      if(pmp.displayname) {
+        senderDisplayName = pmp.displayname;
+      }
+      if(pmp.avatar_url) {
+        senderAvatarMxc = pmp.avatar_url;
+      }
+      senderId = pmp.id;
+    }
 
     const headerJSX = !collapse && (
       <Box

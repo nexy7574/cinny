@@ -43,8 +43,6 @@ export const getImageMsgContent = async (
   mx: MatrixClient,
   item: TUploadItem,
   mxc: string,
-  plainTextCaption?: string,
-  customHtmlCaption?: string
 ): Promise<IContent> => {
   const { file, originalFile, encInfo } = item;
   const [imgError, imgEl] = await to(loadImageElement(getImageFileUrl(originalFile)));
@@ -53,12 +51,8 @@ export const getImageMsgContent = async (
   const content: IContent = {
     msgtype: MsgType.Image,
     filename: file.name,
-    body: plainTextCaption || file.name,
+    body: file.name,
   };
-  if(customHtmlCaption) {
-    content.formatted_body = customHtmlCaption;
-    content.format = "org.matrix.custom.html";
-  }
   if (imgEl) {
     const blurHash = encodeBlurHash(imgEl, 512, scaleYDimension(imgEl.width, 512, imgEl.height));
 
@@ -82,8 +76,6 @@ export const getVideoMsgContent = async (
   mx: MatrixClient,
   item: TUploadItem,
   mxc: string,
-  plainTextCaption?: string,
-  customHtmlCaption?: string
 ): Promise<IContent> => {
   const { file, originalFile, encInfo } = item;
 
@@ -93,12 +85,8 @@ export const getVideoMsgContent = async (
   const content: IContent = {
     msgtype: MsgType.Video,
     filename: file.name,
-    body: plainTextCaption || file.name,
+    body: file.name,
   };
-  if(customHtmlCaption) {
-    content.formatted_body = customHtmlCaption;
-    content.format = "org.matrix.custom.html";
-  }
   if (videoEl) {
     const [thumbError, thumbContent] = await to(
       generateThumbnailContent(
@@ -132,21 +120,17 @@ export const getVideoMsgContent = async (
   return content;
 };
 
-export const getAudioMsgContent = (item: TUploadItem, mxc: string, plainTextCaption?: string, customHtmlCaption?: string): IContent => {
+export const getAudioMsgContent = (item: TUploadItem, mxc: string): IContent => {
   const { file, encInfo } = item;
   const content: IContent = {
     msgtype: MsgType.Audio,
     filename: file.name,
-    body: plainTextCaption || file.name,
+    body: file.name,
     info: {
       mimetype: file.type,
       size: file.size,
     },
   };
-  if(customHtmlCaption) {
-    content.formatted_body = customHtmlCaption;
-    content.format = "org.matrix.custom.html";
-  }
   if (encInfo) {
     content.file = {
       ...encInfo,
@@ -158,21 +142,17 @@ export const getAudioMsgContent = (item: TUploadItem, mxc: string, plainTextCapt
   return content;
 };
 
-export const getFileMsgContent = (item: TUploadItem, mxc: string, plainTextCaption?: string, customHtmlCaption?: string): IContent => {
+export const getFileMsgContent = (item: TUploadItem, mxc: string): IContent => {
   const { file, encInfo } = item;
   const content: IContent = {
     msgtype: MsgType.File,
-    body: plainTextCaption ?? file.name,
+    body: file.name,
     filename: file.name,
     info: {
       mimetype: file.type,
       size: file.size,
     },
   };
-  if(customHtmlCaption) {
-    content.formatted_body = customHtmlCaption;
-    content.format = "org.matrix.custom.html";
-  }
   if (encInfo) {
     content.file = {
       ...encInfo,

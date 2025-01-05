@@ -433,10 +433,12 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
   const [showHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
   const setReplyDraft = useSetAtom(roomIdToReplyDraftAtomFamily(room.roomId));
   const powerLevels = usePowerLevelsContext();
-  const { canDoAction, canSendEvent, getPowerLevel } = usePowerLevelsAPI(powerLevels);
+  const { canDoAction, canSendEvent, canSendStateEvent, getPowerLevel } =
+    usePowerLevelsAPI(powerLevels);
   const myPowerLevel = getPowerLevel(mx.getUserId() ?? '');
   const canRedact = canDoAction('redact', myPowerLevel);
   const canSendReaction = canSendEvent(MessageEvent.Reaction, myPowerLevel);
+  const canPinEvent = canSendStateEvent(StateEvent.RoomPinnedEvents, myPowerLevel);
   const [editId, setEditId] = useState<string>();
   const roomToParents = useAtomValue(roomToParentsAtom);
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
@@ -983,6 +985,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             edit={editId === mEventId}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}
@@ -993,7 +996,6 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reply={
               replyEventId && (
                 <Reply
-                  mx={mx}
                   room={room}
                   timelineSet={timelineSet}
                   replyEventId={replyEventId}
@@ -1055,6 +1057,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             edit={editId === mEventId}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}
@@ -1065,7 +1068,6 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reply={
               replyEventId && (
                 <Reply
-                  mx={mx}
                   room={room}
                   timelineSet={timelineSet}
                   replyEventId={replyEventId}
@@ -1163,6 +1165,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             highlight={highlighted}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             canSendReaction={canSendReaction}
+            canPinEvent={canPinEvent}
             imagePackRooms={imagePackRooms}
             relations={hasReactions ? reactionRelations : undefined}
             onUserClick={handleUserClick}
@@ -1551,17 +1554,33 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           {(canPaginateBack || !rangeAtStart) &&
             (messageLayout === 1 ? (
               <>
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder ref={observeBackAnchor} />
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase ref={observeBackAnchor}>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
               </>
             ) : (
               <>
-                <DefaultPlaceholder />
-                <DefaultPlaceholder />
-                <DefaultPlaceholder ref={observeBackAnchor} />
+                <MessageBase>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase ref={observeBackAnchor}>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
               </>
             ))}
 
@@ -1570,17 +1589,33 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           {(!liveTimelineLinked || !rangeAtEnd) &&
             (messageLayout === 1 ? (
               <>
-                <CompactPlaceholder ref={observeFrontAnchor} />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
-                <CompactPlaceholder />
+                <MessageBase ref={observeFrontAnchor}>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <CompactPlaceholder key={getItems().length} />
+                </MessageBase>
               </>
             ) : (
               <>
-                <DefaultPlaceholder ref={observeFrontAnchor} />
-                <DefaultPlaceholder />
-                <DefaultPlaceholder />
+                <MessageBase ref={observeFrontAnchor}>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
+                <MessageBase>
+                  <DefaultPlaceholder key={getItems().length} />
+                </MessageBase>
               </>
             ))}
           <span ref={atBottomAnchorRef} />

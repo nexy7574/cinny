@@ -52,7 +52,8 @@ import {
   trimCustomHtml,
   isEmptyEditor,
   getBeginCommand,
-  trimCommand, BlockType,
+  trimCommand,
+  BlockType,
 } from '../../components/editor';
 import { EmojiBoard, EmojiBoardTab } from '../../components/emoji-board';
 import { UseStateProvider } from '../../components/UseStateProvider';

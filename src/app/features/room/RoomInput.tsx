@@ -52,11 +52,19 @@ import {
   trimCustomHtml,
   isEmptyEditor,
   getBeginCommand,
-  trimCommand,
+  trimCommand, BlockType,
 } from '../../components/editor';
 import { EmojiBoard, EmojiBoardTab } from '../../components/emoji-board';
 import { UseStateProvider } from '../../components/UseStateProvider';
-import { TUploadContent, encryptFile, getImageInfo, getMxIdLocalPart, mxcUrlToHttp } from '../../utils/matrix';
+import {
+  TUploadContent,
+  encryptFile,
+  getImageInfo,
+  getMxIdLocalPart,
+  mxcUrlToHttp,
+  isUserId,
+  getCanonicalAliasOrRoomId
+} from '../../utils/matrix';
 import { useTypingStatusUpdater } from '../../hooks/useTypingStatusUpdater';
 import { useFilePicker } from '../../hooks/useFilePicker';
 import { useFilePasteHandler } from '../../hooks/useFilePasteHandler';
@@ -105,10 +113,7 @@ import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
 import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
-import {
-  CustomElement, InlineElement,
-  MentionElement, ParagraphElement,
-} from '../../components/editor/slate';
+import { InlineElement } from '../../components/editor/slate';
 
 interface RoomInputProps {
   editor: Editor;
@@ -296,23 +301,23 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         body,
       };
       const userIdMentions = new Set<string>();
-      if (replyDraft) {
+      if (replyDraft && replyDraft.userId !== mx.getUserId()) {
         userIdMentions.add(replyDraft.userId);
       }
       let mentionsRoom = false;
       editor.children.forEach((node: Descendant): void => {
-        if("type" in node && node.type !== "paragraph") return;
-        const paragraph: ParagraphElement = node as ParagraphElement;
-        paragraph.children?.forEach((child: InlineElement): void => {
-          if ("type" in child && child.type === "mention") {
-            const mention: MentionElement = child as MentionElement;
-            if (mention.name === "@room" && !mention.id.startsWith("@")) {
-              mentionsRoom = true
-            } else {
-              userIdMentions.add(mention.id)
+        if ("type" in node && node.type === BlockType.Paragraph) {
+          node.children?.forEach((child: InlineElement): void => {
+            if ("type" in child && child.type === BlockType.Mention) {
+              const mention = child;
+              if (mention.id === getCanonicalAliasOrRoomId(mx, roomId)) {
+                mentionsRoom = true
+              } else if (isUserId(mention.id) && mention.id !== mx.getUserId()) {
+                userIdMentions.add(mention.id)
+              }
             }
-          }
-        })
+          })
+        }
       })
       const mMentions: IMentions = {}
       if (userIdMentions.size > 0) {

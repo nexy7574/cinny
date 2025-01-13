@@ -703,8 +703,9 @@ export const Message = as<'div', MessageProps>(
     const rawEvent = mEvent.getEffectiveEvent();
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
+    let senderId = mEvent.getSender() ?? '';
+    const originalSenderId = senderId;
     const realSenderId = mEvent.getSender() ?? '';
-    let senderId = realSenderId;
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
@@ -713,18 +714,20 @@ export const Message = as<'div', MessageProps>(
 
     let senderDisplayName =
       getMemberDisplayName(room, senderId) ?? getMxIdLocalPart(senderId) ?? senderId;
+    const originalSenderDisplayName = senderDisplayName;
     let senderAvatarMxc = getMemberAvatarMxc(room, senderId);
+    const pmp = rawEvent.content["com.beeper.per_message_profile"];
+    const fakeOnClick = () => undefined;
 
-    if(rawEvent.content["com.beeper.per_message_profile"]) {
-      const pmp = rawEvent.content["com.beeper.per_message_profile"];
+    if(pmp) {
       if(!pmp.id) {
-        pmp.id = `${room.roomId}-${pmp.displayName || senderDisplayName}`;
+        pmp.id = `msc4144+${room.name || room.roomId}+${pmp.displayName || senderDisplayName}+${originalSenderId}`;
       }
-      if(pmp.displayname) {
+      if(pmp.displayname && typeof pmp.displayname === 'string') {
         senderDisplayName = pmp.displayname;
       }
-      if(pmp.avatar_url) {
-        senderAvatarMxc = pmp.avatar_url;
+      if(pmp.avatar_url && typeof pmp.avatar_url === 'string') {
+        senderAvatarMxc = `${pmp.avatar_url}`;
       }
       senderId = pmp.id;
     }
@@ -738,15 +741,28 @@ export const Message = as<'div', MessageProps>(
         grow="Yes"
       >
         <Username
-          as="button"
+          as={pmp ? "span" : "button"}
           style={{ color: colorMXID(senderId) }}
           data-user-id={realSenderId}
-          onContextMenu={onUserClick}
-          onClick={onUsernameClick}
+          onContextMenu={pmp ? fakeOnClick : onUserClick}
+          onClick={pmp ? fakeOnClick : onUserClick}
         >
           <Text as="span" size={messageLayout === 2 ? 'T300' : 'T400'} truncate>
             <b>{senderDisplayName}</b>
           </Text>
+          {
+            pmp && <Text as="span" size='T200'>
+                  &nbsp;via <Username
+                  as="button"
+                  style={{ color: colorMXID(originalSenderId) }}
+                  data-user-id={originalSenderId}
+                  onContextMenu={onUserClick}
+                  onClick={onUsernameClick}
+              >
+                  <b>{originalSenderDisplayName}</b>
+              </Username>
+              </Text>
+          }
         </Username>
         <Box shrink="No" gap="100">
           {messageLayout === 0 && hover && (

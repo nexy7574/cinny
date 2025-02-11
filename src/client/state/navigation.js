@@ -51,9 +51,6 @@ class Navigation extends EventEmitter {
       [cons.actions.navigation.OPEN_PROFILE_VIEWER]: () => {
         this.emit(cons.events.navigation.PROFILE_VIEWER_OPENED, action.userId, action.roomId);
       },
-      [cons.actions.navigation.OPEN_SETTINGS]: () => {
-        this.emit(cons.events.navigation.SETTINGS_OPENED, action.tabText);
-      },
       [cons.actions.navigation.OPEN_SEARCH]: () => {
         this.emit(
           cons.events.navigation.SEARCH_OPENED,
@@ -75,13 +72,6 @@ class Navigation extends EventEmitter {
           action.title,
           action.render,
           action.afterClose,
-        );
-      },
-      [cons.actions.navigation.OPEN_EMOJI_VERIFICATION]: () => {
-        this.emit(
-          cons.events.navigation.EMOJI_VERIFICATION_OPENED,
-          action.request,
-          action.targetDevice,
         );
       },
     };

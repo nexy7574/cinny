@@ -18,6 +18,7 @@ import FocusTrap from 'focus-trap-react';
 import React, { MouseEventHandler, ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   clearCacheAndReload,
+  clearLoginData,
   initClient,
   logoutClient,
   startClient,
@@ -48,7 +49,7 @@ function ClientRootLoading() {
   );
 }
 
-function ClientRootOptions({ mx }: { mx: MatrixClient }) {
+function ClientRootOptions({ mx }: { mx?: MatrixClient }) {
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
   const handleToggle: MouseEventHandler<HTMLButtonElement> = (evt) => {
@@ -90,13 +91,21 @@ function ClientRootOptions({ mx }: { mx: MatrixClient }) {
           >
             <Menu>
               <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
-                <MenuItem onClick={() => clearCacheAndReload(mx)} size="300" radii="300">
-                  <Text as="span" size="T300" truncate>
-                    Clear Cache and Reload
-                  </Text>
-                </MenuItem>
+                {mx && (
+                  <MenuItem onClick={() => clearCacheAndReload(mx)} size="300" radii="300">
+                    <Text as="span" size="T300" truncate>
+                      Clear Cache and Reload
+                    </Text>
+                  </MenuItem>
+                )}
                 <MenuItem
-                  onClick={() => logoutClient(mx)}
+                  onClick={() => {
+                    if (mx) {
+                      logoutClient(mx);
+                      return;
+                    }
+                    clearLoginData();
+                  }}
                   size="300"
                   radii="300"
                   variant="Critical"
@@ -172,7 +181,7 @@ export function ClientRoot({ children }: ClientRootProps) {
   return (
     <SpecVersions baseUrl={baseUrl!}>
       {mx && <SyncStatus mx={mx} />}
-      {loading && mx && <ClientRootOptions mx={mx} />}
+      {loading && <ClientRootOptions mx={mx} />}
       {(loadState.status === AsyncStatus.Error || startState.status === AsyncStatus.Error) && (
         <SplashScreen>
           <Box direction="Column" grow="Yes" alignItems="Center" justifyContent="Center" gap="400">
@@ -182,7 +191,7 @@ export function ClientRoot({ children }: ClientRootProps) {
                   <Text>{`Failed to load. ${loadState.error.message}`}</Text>
                 )}
                 {startState.status === AsyncStatus.Error && (
-                  <Text>{`Failed to load. ${startState.error.message}`}</Text>
+                  <Text>{`Failed to start. ${startState.error.message}`}</Text>
                 )}
                 <Button variant="Critical" onClick={mx ? () => startMatrix(mx) : loadMatrix}>
                   <Text as="span" size="B400">

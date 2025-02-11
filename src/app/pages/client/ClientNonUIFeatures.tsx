@@ -8,7 +8,7 @@ import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
 import LogoHighlightSVG from '../../../../public/res/svg/cinny-highlight.svg';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
-import { setFavicon } from '../../utils/dom';
+import { notificationPermission, setFavicon } from '../../utils/dom';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { allInvitesAtom } from '../../state/room-list/inviteList';
@@ -110,7 +110,7 @@ function InviteNotifications() {
 
   useEffect(() => {
     if (invites.length > perviousInviteLen && mx.getSyncState() === 'SYNCING') {
-      if (showNotifications && Notification.permission === 'granted') {
+      if (showNotifications && notificationPermission('granted')) {
         notify(invites.length - perviousInviteLen);
       }
 
@@ -212,7 +212,7 @@ function MessageNotifications() {
         return;
       }
 
-      if (showNotifications && Notification.permission === 'granted') {
+      if (showNotifications && notificationPermission('granted')) {
         const avatarMxc =
           room.getAvatarFallbackMember()?.getMxcAvatarUrl() ?? room.getMxcAvatarUrl();
         notify({

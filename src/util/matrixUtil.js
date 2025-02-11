@@ -100,44 +100,11 @@ export function getIdServer(userId) {
   return idParts[1];
 }
 
-export function isCrossVerified(mx, deviceId) {
-  try {
-    const crossSignInfo = mx.getStoredCrossSigningForUser(mx.getUserId());
-    const deviceInfo = mx.getStoredDevice(mx.getUserId(), deviceId);
-    const deviceTrust = crossSignInfo.checkDeviceTrust(crossSignInfo, deviceInfo, false, true);
-    return deviceTrust.isCrossSigningVerified();
-  } catch (e) {
-    // device does not support encryption
-    return null;
-  }
-}
-
-export function hasCrossSigningAccountData(mx) {
-  const masterKeyData = mx.getAccountData('m.cross_signing.master');
-  return !!masterKeyData;
-}
-
-export function getDefaultSSKey(mx) {
-  try {
-    return mx.getAccountData('m.secret_storage.default_key').getContent().key;
-  } catch {
-    return undefined;
-  }
-}
-
-export function getSSKeyInfo(mx, key) {
-  try {
-    return mx.getAccountData(`m.secret_storage.key.${key}`).getContent();
-  } catch {
-    return undefined;
-  }
-}
-
 export async function hasDevices(mx, userId) {
   try {
-    const usersDeviceMap = await mx.downloadKeys([userId, mx.getUserId()]);
+    const usersDeviceMap = await mx.getUserDeviceInfo([userId, mx.getUserId()]);
     return Object.values(usersDeviceMap)
-      .every((userDevices) => (Object.keys(userDevices).length > 0));
+      .every((deviceIdToDevices) => deviceIdToDevices.size > 0);
   } catch (e) {
     console.error("Error determining if it's possible to encrypt to all users: ", e);
     return false;

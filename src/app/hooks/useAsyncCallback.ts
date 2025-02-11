@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useAlive } from './useAlive';
 
@@ -31,12 +31,10 @@ export type AsyncState<D, E = unknown> = AsyncIdle | AsyncLoading | AsyncSuccess
 
 export type AsyncCallback<TArgs extends unknown[], TData> = (...args: TArgs) => Promise<TData>;
 
-export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
-  asyncCallback: AsyncCallback<TArgs, TData>
-): [AsyncState<TData, TError>, AsyncCallback<TArgs, TData>] => {
-  const [state, setState] = useState<AsyncState<TData, TError>>({
-    status: AsyncStatus.Idle,
-  });
+export const useAsync = <TData, TError, TArgs extends unknown[]>(
+  asyncCallback: AsyncCallback<TArgs, TData>,
+  onStateChange: (state: AsyncState<TData, TError>) => void
+): AsyncCallback<TArgs, TData> => {
   const alive = useAlive();
 
   // Tracks the request number.
@@ -53,7 +51,7 @@ export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
         flushSync(() => {
           // flushSync because
           // https://github.com/facebook/react/issues/26713#issuecomment-1872085134
-          setState({
+          onStateChange({
             status: AsyncStatus.Loading,
           });
         });
@@ -69,7 +67,7 @@ export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
         }
         if (alive()) {
           queueMicrotask(() => {
-            setState({
+            onStateChange({
               status: AsyncStatus.Success,
               data,
             });
@@ -83,7 +81,7 @@ export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
 
         if (alive()) {
           queueMicrotask(() => {
-            setState({
+            onStateChange({
               status: AsyncStatus.Error,
               error: e as TError,
             });
@@ -92,8 +90,32 @@ export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
         throw e;
       }
     },
-    [asyncCallback, alive]
+    [asyncCallback, alive, onStateChange]
   );
 
+  return callback;
+};
+
+export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
+  asyncCallback: AsyncCallback<TArgs, TData>
+): [AsyncState<TData, TError>, AsyncCallback<TArgs, TData>] => {
+  const [state, setState] = useState<AsyncState<TData, TError>>({
+    status: AsyncStatus.Idle,
+  });
+
+  const callback = useAsync(asyncCallback, setState);
+
   return [state, callback];
+};
+
+export const useAsyncCallbackValue = <TData, TError>(
+  asyncCallback: AsyncCallback<[], TData>
+): [AsyncState<TData, TError>, AsyncCallback<[], TData>] => {
+  const [state, load] = useAsyncCallback<TData, TError, []>(asyncCallback);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return [state, load];
 };

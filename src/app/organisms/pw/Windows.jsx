@@ -4,7 +4,6 @@ import cons from '../../../client/state/cons';
 import navigation from '../../../client/state/navigation';
 
 import InviteUser from '../invite-user/InviteUser';
-import Settings from '../settings/Settings';
 import SpaceSettings from '../space-settings/SpaceSettings';
 import RoomSettings from '../room/RoomSettings';
 
@@ -38,7 +37,6 @@ function Windows() {
         searchTerm={inviteUser.searchTerm}
         onRequestClose={() => changeInviteUser({ isOpen: false, roomId: undefined })}
       />
-      <Settings />
       <SpaceSettings />
       <RoomSettings />
     </>

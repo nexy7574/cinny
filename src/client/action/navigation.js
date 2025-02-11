@@ -57,13 +57,6 @@ export function openProfileViewer(userId, roomId) {
   });
 }
 
-export function openSettings(tabText) {
-  appDispatcher.dispatch({
-    type: cons.actions.navigation.OPEN_SETTINGS,
-    tabText,
-  });
-}
-
 export function openSearch(term) {
   appDispatcher.dispatch({
     type: cons.actions.navigation.OPEN_SEARCH,
@@ -90,10 +83,3 @@ export function openReusableDialog(title, render, afterClose) {
   });
 }
 
-export function openEmojiVerification(request, targetDevice) {
-  appDispatcher.dispatch({
-    type: cons.actions.navigation.OPEN_EMOJI_VERIFICATION,
-    request,
-    targetDevice,
-  });
-}

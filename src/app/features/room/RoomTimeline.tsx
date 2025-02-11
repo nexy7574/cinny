@@ -85,7 +85,7 @@ import {
   reactionOrEditEvent,
 } from '../../utils/room';
 import { useSetting } from '../../state/hooks/settings';
-import { settingsAtom } from '../../state/settings';
+import { MessageLayout, settingsAtom } from '../../state/settings';
 import { openProfileViewer } from '../../../client/action/navigation';
 import { useMatrixEventRenderer } from '../../hooks/useMatrixEventRenderer';
 import { Reactions, Message, Event, EncryptedContent } from './message';
@@ -336,7 +336,10 @@ const useTimelinePagination = (
           backwards ? Direction.Backward : Direction.Forward
         ) ?? timelineToPaginate;
       // Decrypt all event ahead of render cycle
-      if (mx.isRoomEncrypted(fetchedTimeline.getRoomId() ?? '')) {
+      const roomId = fetchedTimeline.getRoomId();
+      const room = roomId ? mx.getRoom(roomId) : null;
+
+      if (room?.hasEncryptionStateEvent()) {
         await to(decryptAllTimelineEvent(mx, fetchedTimeline));
       }
 
@@ -421,7 +424,6 @@ const getRoomUnreadInfo = (room: Room, scrollTo = false) => {
 export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimelineProps) {
   const mx = useMatrixClient();
   const useAuthentication = useMediaAuthentication();
-  const encryptedRoom = mx.isRoomEncrypted(room.roomId);
   const [messageLayout] = useSetting(settingsAtom, 'messageLayout');
   const [messageSpacing] = useSetting(settingsAtom, 'messageSpacing');
   const [hideMembershipEvents] = useSetting(settingsAtom, 'hideMembershipEvents');
@@ -429,7 +431,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
   const [mediaAutoLoad] = useSetting(settingsAtom, 'mediaAutoLoad');
   const [urlPreview] = useSetting(settingsAtom, 'urlPreview');
   const [encUrlPreview] = useSetting(settingsAtom, 'encUrlPreview');
-  const showUrlPreview = encryptedRoom ? encUrlPreview : urlPreview;
+  const showUrlPreview = room.hasEncryptionStateEvent() ? encUrlPreview : urlPreview;
   const [showHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
   const setReplyDraft = useSetAtom(roomIdToReplyDraftAtomFamily(room.roomId));
   const powerLevels = usePowerLevelsContext();
@@ -900,7 +902,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
       const editedReply = getEditedEvent(replyId, replyEvt, room.getUnfilteredTimelineSet());
       const content: IContent = editedReply?.getContent()['m.new_content'] ?? replyEvt.getContent();
       const { body, formatted_body: formattedBody } = content;
-      const { 'm.relates_to': relation } = replyEvt.getOriginalContent();
+      const { 'm.relates_to': relation } = replyEvt.getWireContent();
       const senderId = replyEvt.getSender();
       if (senderId && typeof body === 'string') {
         setReplyDraft({
@@ -1030,7 +1032,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
                 urlPreview={showUrlPreview}
                 htmlReactParserOptions={htmlReactParserOptions}
                 linkifyOpts={linkifyOpts}
-                outlineAttachment={messageLayout === 2}
+                outlineAttachment={messageLayout === MessageLayout.Bubble}
               />
             )}
           </Message>
@@ -1126,7 +1128,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
                       urlPreview={showUrlPreview}
                       htmlReactParserOptions={htmlReactParserOptions}
                       linkifyOpts={linkifyOpts}
-                      outlineAttachment={messageLayout === 2}
+                      outlineAttachment={messageLayout === MessageLayout.Bubble}
                     />
                   );
                 }
@@ -1211,7 +1213,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
         const highlighted = focusItem?.index === item && focusItem.highlight;
         const parsed = parseMemberEvent(mEvent);
 
-        const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+        const timeJSX = (
+          <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+        );
 
         return (
           <Event
@@ -1244,7 +1248,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
         const senderId = mEvent.getSender() ?? '';
         const senderName = getMemberDisplayName(room, senderId) || getMxIdLocalPart(senderId);
 
-        const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+        const timeJSX = (
+          <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+        );
 
         return (
           <Event
@@ -1278,7 +1284,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
         const senderId = mEvent.getSender() ?? '';
         const senderName = getMemberDisplayName(room, senderId) || getMxIdLocalPart(senderId);
 
-        const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+        const timeJSX = (
+          <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+        );
 
         return (
           <Event
@@ -1312,7 +1320,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
         const senderId = mEvent.getSender() ?? '';
         const senderName = getMemberDisplayName(room, senderId) || getMxIdLocalPart(senderId);
 
-        const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+        const timeJSX = (
+          <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+        );
 
         return (
           <Event
@@ -1348,7 +1358,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
       const senderId = mEvent.getSender() ?? '';
       const senderName = getMemberDisplayName(room, senderId) || getMxIdLocalPart(senderId);
 
-      const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+      const timeJSX = (
+        <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+      );
 
       return (
         <Event
@@ -1389,7 +1401,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
       const senderId = mEvent.getSender() ?? '';
       const senderName = getMemberDisplayName(room, senderId) || getMxIdLocalPart(senderId);
 
-      const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />;
+      const timeJSX = (
+        <Time ts={mEvent.getTs()} compact={messageLayout === MessageLayout.Compact} />
+      );
 
       return (
         <Event
@@ -1544,7 +1558,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             <div
               style={{
                 padding: `${config.space.S700} ${config.space.S400} ${config.space.S600} ${
-                  messageLayout === 1 ? config.space.S400 : toRem(64)
+                  messageLayout === MessageLayout.Compact ? config.space.S400 : toRem(64)
                 }`,
               }}
             >
@@ -1552,7 +1566,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             </div>
           )}
           {(canPaginateBack || !rangeAtStart) &&
-            (messageLayout === 1 ? (
+            (messageLayout === MessageLayout.Compact ? (
               <>
                 <MessageBase>
                   <CompactPlaceholder key={getItems().length} />
@@ -1587,7 +1601,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           {getItems().map(eventRenderer)}
 
           {(!liveTimelineLinked || !rangeAtEnd) &&
-            (messageLayout === 1 ? (
+            (messageLayout === MessageLayout.Compact ? (
               <>
                 <MessageBase ref={observeFrontAnchor}>
                   <CompactPlaceholder key={getItems().length} />

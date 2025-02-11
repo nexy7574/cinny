@@ -19,6 +19,7 @@ import { getMxIdLocalPart, getMxIdServer, validMxId } from '../../../utils/matri
 import { getMemberDisplayName, getMemberSearchStr } from '../../../utils/room';
 import { UserAvatar } from '../../user-avatar';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
+import { Membership } from '../../../../types/matrix/room';
 
 type MentionAutoCompleteHandler = (userId: string, name: string) => void;
 
@@ -67,6 +68,11 @@ type UserMentionAutocompleteProps = {
   requestClose: () => void;
 };
 
+const withAllowedMembership = (member: RoomMember): boolean =>
+  member.membership === Membership.Join ||
+  member.membership === Membership.Invite ||
+  member.membership === Membership.Knock;
+
 const SEARCH_OPTIONS: UseAsyncSearchOptions = {
   limit: 20,
   matchOptions: {
@@ -91,7 +97,9 @@ export function UserMentionAutocomplete({
   const members = useRoomMembers(mx, roomId);
 
   const [result, search, resetSearch] = useAsyncSearch(members, getRoomMemberStr, SEARCH_OPTIONS);
-  const autoCompleteMembers = result ? result.items : members.slice(0, 20);
+  const autoCompleteMembers = (result ? result.items : members.slice(0, 20)).filter(
+    withAllowedMembership
+  );
 
   useEffect(() => {
     if (query.text) search(query.text);

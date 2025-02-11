@@ -1,10 +1,7 @@
 import { createClient, MatrixClient, IndexedDBStore, IndexedDBCryptoStore } from 'matrix-js-sdk';
-import Olm from '@matrix-org/olm';
 import { logger } from 'matrix-js-sdk/lib/logger';
 
 import { cryptoCallbacks } from './state/secretStorageKeys';
-
-global.Olm = Olm;
 
 if (import.meta.env.PROD) {
   logger.disableAll();
@@ -24,20 +21,22 @@ export const initClient = async (session: Session): Promise<MatrixClient> => {
     dbName: 'web-sync-store',
   });
 
+  const legacyCryptoStore = new IndexedDBCryptoStore(global.indexedDB, 'crypto-store');
+
   const mx = createClient({
     baseUrl: session.baseUrl,
     accessToken: session.accessToken,
     userId: session.userId,
     store: indexedDBStore,
-    cryptoStore: new IndexedDBCryptoStore(global.indexedDB, 'crypto-store'),
+    cryptoStore: legacyCryptoStore,
     deviceId: session.deviceId,
     timelineSupport: true,
     cryptoCallbacks: cryptoCallbacks as any,
     verificationMethods: ['m.sas.v1'],
   });
 
-  await mx.initCrypto();
   await indexedDBStore.startup();
+  await mx.initRustCrypto();
 
   mx.setGlobalErrorOnUnknownDevices(false);
   mx.setMaxListeners(50);
@@ -65,6 +64,20 @@ export const logoutClient = async (mx: MatrixClient) => {
     // ignore if failed to logout
   }
   await mx.clearStores();
+  window.localStorage.clear();
+  window.location.reload();
+};
+
+export const clearLoginData = async () => {
+  const dbs = await window.indexedDB.databases();
+
+  dbs.forEach((idbInfo) => {
+    const { name } = idbInfo;
+    if (name) {
+      window.indexedDB.deleteDatabase(name);
+    }
+  });
+
   window.localStorage.clear();
   window.location.reload();
 };
